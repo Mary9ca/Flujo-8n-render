@@ -1,0 +1,631 @@
+{
+  "name": "Invoice Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1160,
+        240
+      ],
+      "id": "09772b11-ec75-4b4a-8512-477a0480749a",
+      "name": "Telegram Trigger",
+      "webhookId": "89e7172e-136a-4e73-8288-3655a169260f",
+      "credentials": {
+        "telegramApi": {
+          "id": "Lyw80RqY8Hj8aQoY",
+          "name": "Telegram bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.document ? $json.message.document.file_id : ($json.message.photo ? $json.message.photo[0].file_id : null) }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -940,
+        20
+      ],
+      "id": "bcc2e2e3-f1b3-4cfd-abbd-6d17e2113135",
+      "name": "Get a file",
+      "webhookId": "0780a755-50fd-432f-84bb-76b1b2b800a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Lyw80RqY8Hj8aQoY",
+          "name": "Telegram bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const file = $input.item.binary?.data;\n\nif (!file) {\n  throw new Error(\"No se encontró el archivo en binary.data\");\n}\n\n// Usa fileName o mime_type para detectar\nconst fileName = file.fileName || '';\nconst mimeTypeFromTelegram = file.mimeType || '';\n\nlet mimeType = 'application/octet-stream';\n\nif (\n  fileName.toLowerCase().endsWith('.jpg') || \n  fileName.toLowerCase().endsWith('.jpeg') || \n  mimeTypeFromTelegram === 'image/jpeg'\n) {\n  mimeType = 'image/jpeg';\n} else if (\n  fileName.toLowerCase().endsWith('.png') || \n  mimeTypeFromTelegram === 'image/png'\n) {\n  mimeType = 'image/png';\n} else {\n  throw new Error(\"Formato de imagen no válido. Solo JPG y PNG son soportados.\");\n}\n\nreturn [\n  {\n    binary: {\n      data: {\n        ...file,\n        mimeType,\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "af19658f-c30a-4790-98f7-29425cf88875",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1yKkeCEHcIHQFRs1XJmGPJRWB1ruoDepK0HG6Ru0PLLk",
+          "mode": "list",
+          "cachedResultName": "Agente Registro Gastos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yKkeCEHcIHQFRs1XJmGPJRWB1ruoDepK0HG6Ru0PLLk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yKkeCEHcIHQFRs1XJmGPJRWB1ruoDepK0HG6Ru0PLLk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Glosa/Descripción": "={{ $fromAI(\"Descripcion\") }}",
+            "Monto": "={{ $fromAI(\"Monto\") }}",
+            "Proveedor/Comercio": "={{ $fromAI(\"Comercio\") }}",
+            "NIT": "={{ $fromAI(\"Nit\") }}",
+            "Método de Pago": "={{ $fromAI(\"Metododepago\") }}",
+            "Fecha": "={{ $fromAI(\"Fecha\") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Glosa/Descripción",
+              "displayName": "Glosa/Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Monto",
+              "displayName": "Monto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Proveedor/Comercio",
+              "displayName": "Proveedor/Comercio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NIT",
+              "displayName": "NIT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Método de Pago",
+              "displayName": "Método de Pago",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        840,
+        300
+      ],
+      "id": "abc02318-4bbd-47dc-973d-423f10b7608f",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0Gw9w9H7Rb2WBhW",
+          "name": "Google Sheets account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        40
+      ],
+      "id": "b07f482c-b87d-4585-baae-9578545921a8",
+      "name": "Send a text message",
+      "webhookId": "9212c9fa-2fbe-4844-a788-c431775ec23b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Lyw80RqY8Hj8aQoY",
+          "name": "Telegram bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f77a780d-d5db-4348-8f89-fc1f6945b3a1",
+                    "leftValue": "={{ $json.fileExtension }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8d28fd02-110f-4792-b452-6936431becb5",
+                    "leftValue": "={{ $json.fileExtension && ($json.fileExtension.toLowerCase() === 'jpg' || $json.fileExtension.toLowerCase() === 'png') }}",
+                    "rightValue": "jpg png",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "02c7d9a6-e297-491f-bf1b-2b9a71d80229",
+                    "leftValue": "unknown",
+                    "rightValue": "unknown",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -500,
+        20
+      ],
+      "id": "d639b986-8514-4f69-bff8-49342153c6a2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdf.co/v1/pdf/convert/to/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "=mcstore.contactodirecto@gmail.com_SJyEyNQuI20083pZzvlkH8QzDYqX8qja8MO4wwSwvNJFzXcRD750EF2ozj0pQkz4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"url\": \"{{ $json.url }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "1c0b826d-627e-40c3-8080-0198ee43b646",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const file = items[0].binary?.data;\nif (file) {\n    const fileName = file.fileName || 'unnamed';\n    const fileExtension = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : 'unknown';\n    let mimeType = 'application/octet-stream';\n    if (fileExtension === 'jpg' || fileExtension === 'jpeg') mimeType = 'image/jpeg';\n    else if (fileExtension === 'png') mimeType = 'image/png';\n    return [{ json: { fileExtension, mimeType }, binary: { data: file } }];\n} else {\n    throw new Error(\"No se encontraron datos binarios en el archivo. Verifica la salida de Get a file.\");\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        20
+      ],
+      "id": "8c44b4f0-e5c9-4e91-9021-404148a8e345",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Tipo de archivo no soportado",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        180
+      ],
+      "id": "7e7b2081-d0b0-4bf0-940b-16830aade763",
+      "name": "Send a text message1",
+      "webhookId": "b4ce8150-833e-4beb-80dc-4474e75f9a23",
+      "credentials": {
+        "telegramApi": {
+          "id": "Lyw80RqY8Hj8aQoY",
+          "name": "Telegram bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdf.co/v1/file/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "mcstore.contactodirecto@gmail.com_SJyEyNQuI20083pZzvlkH8QzDYqX8qja8MO4wwSwvNJFzXcRD750EF2ozj0pQkz4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -460,
+        260
+      ],
+      "id": "5f741e9b-fa4b-4338-b74e-029f25c3e13a",
+      "name": "Upload PDF to PDF.co"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bf209f80-e69a-43ce-b3e4-c0211b5f7d6b",
+              "name": "content",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        320
+      ],
+      "id": "7d8b6c76-c98a-42f4-8ac1-944291285f5f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -20,
+        320
+      ],
+      "id": "281b85b9-4ebc-430a-9ec4-ad5b68162b31",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.content }}",
+        "options": {
+          "systemMessage": "=ACTÚA COMO LUZIA LA ASISTENTE FINANCIERA QUE AYUDA A SER PRODUCTIVO A LOS HUMANOS ORGANIZANDO LA INFORMACIÓN FINANCIERA TU ROL ES EXTRAER Y REGISTRAR INFORMACIÓN DE RECIBOS, BOLETAS, GASTOS, O DETALLES ENTREGADOS VÍA FORMATO DE TEXTO PLANO, ARCHIVOS PDF O AUDIO, TRASPASANDOLOS A UNA PLANILLA EN GOOGLE SHEETS DE FORMA CLARA, EFICIENTE Y ORDENADA.\nINSTRUCCIONES\n-PROCESA LOS DATOS COMO FECHAS, MONTOS/SALDOS , COMERCIO/EMPRESA/PROVEEDOR, NIT, METODO/FORMA DE PAGO y GLOSAS / DESCRIPCIIONES DETALLADAS.\n-SOLO DEBES REGISTRAR EL TOTAL DEL GASTO, FECHA, NIT, METODO/FORMA DE PAGO Y EL COMERCIO/EMPRESA/PROVEEDOR o establecimiento DONDE SE REALIZÓ EL GASTO.\n-IGNORA SUBPRODUCTOS O DETALLES INDIVIDUALES DENTRO DE UNA BOLETA, SÓLO GASTOS TOTALES\n-REGISTRA LOS DATOS EN EL SIGUIENTE FORMATO:\n-Fecha: dd-mm-yyyy\n-Glosa: Descripción del gasto (si es que lo dicen)\n-Monto: XX\n-Proveedor/Comercio: Comercio o establecimiento donde se realizó el gasto\n-NIT: Número de Identificación Tributario en Colombia\n-Método de Pago: Método o Forma de Pago que puede ser Efectivo, Tarjeta de Crédito ó Tarjeta de Débito\n-LOS MONTOS DEBEN REGISTRARSE SIN PUNTOS NI COMAS (EJEMPLO: Registra \"20000\" EN VEZ DE \"20,000\" o \"20.000\").\n-UTILIZA LA FECHA ACTUAL, {{ $now }} , COMO REFERENCIA SI LA FECHA NO ES PROPORCIONADA.\n-MANEJA CON CUIDADO LA INFORMACIÓN INCOMPLETA:\n-SI FALTA ALGUN DATO, ANOTALO CLARAMENTE COMO \"NO PROPORCIONADO\".\nGARANTIZA LA EXACTITUD EN LA TRANSCRIPCIÓN Y LA ORGANIZACIÓN EN LA estructura de los datos. Utiliza UN TONO PROFESIONAL Y CONSISTENTE cuando registres los datos.\nPASO A PASO DE TU RAZONAMIENTO:\nCOMPRENDER LA FUENTE: 1.1. IDENTIFICAR el formato y tipo de entrada (texto, audio, o PDF). 1.2. ANALIZAR si la información está completa o requiere inferencias.\nEXTRAER LOS DATOS: 2.1. LOCALIZAR el total del Monto, fecha, comercio/proveedor/empresa asociado, Glosa/Descripción, NIT y Método de PAgo 2.2. IGNORAR SUBPRODUCTOS O DETALLES ESPECÍFICOS, CENTRÁNDOTE SOLO EN EL TOTAL, EL COMERCIO, NIT y Método de Pago.\nVERIFICAR Y ORGANIZAR: 3.1. ASEGURAR que los datos extraídos sean precisos y completos. 3.2. FORMATEAR los datos correctamente antes de registrarlos.\nREGISTRAR EN GOOGLE SHEETS: 4.1. TRASPASAR cada dato en su respectivo campo. 4.2. AGREGAR NOTAS EN CASO DE INFORMACIÓN INCOMPLETA O INFERIDA.\nREVISAR EL REGISTRO: 5.1. REALIZAR UNA REVISIÓN FINAL para garantizar consistencia y claridad.\nQUÉ NO HACER:\n-NUNCA OMITAS INFORMACIÓN CLAVE COMO FECHAS, MONTOS O EL NOMBRE DEL COMERCIO.\n-NUNCA INVENTES DATOS SI NO SON PROPORCIONADOS.\n-NUNCA FORMATEES LOS DATOS DE MANERA INCORRECTA O INCONSISTENTE.\n-NUNCA INCLUYAS DETALLES DE SUBPRODUCTOS O DESGLOSES INTERNOS DE BOLETAS.\n-NUNCA SUPONGAS FECHAS DISTINTAS A LA ACTUAL SI NO SON MENCIONADAS.\n-NUNCA REGISTRES LA INFORMACIÓN SIN VERIFICAR SU EXACTITUD.\nEJEMPLOS DE REGISTRO:\nEntrada: Texto: \"Boleta de Almuerzo, 25320, fecha: 12 de Febrero.\" Registro:\n-Fecha: 12/02/2025\n-Monto: COP 25300\n-Glosa/Descripción: Almuerzo\n-Proveedor/Empresa: El Gavilan Pollero\n-NIT: 12387664\n-Método de Pago: Tarjeta de Crédito\nEntrada: Audio: \"Gasto total en la rumba del Viernes en Perro Negro Medellin, 300000. fecha: Borré Casette.\" Registro:\n-Fecha: DD/MM/YYYY\n-Monto: COP 300000\n-Glosa: Rumba en Medellín\n-Proveedor/Comercio: Perro Negro\n-NIT: No Proporcionado\n-Método de Pago: No proporcionado\nEntrada: PDF: Total: 6,700; Fecha: 12-02-2025; Comercio: OpenAI; NIT: 743629992 ; Detalle: Tokens para automatizar en n8n; Método de Pago: Tarjeta de Crédito Registro:\n-Fecha: 12/02/2025\n-Monto: COP 6700\n-Glosa: Tokens para automatizar en n8n\n-Proveedor/Comercio: OpenAI\n-NIT: 743629992\n-Método de Pago: Tarjeta de Crédito\nEl output entrégalo en formato JSON\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        680,
+        60
+      ],
+      "id": "4cbf50c7-7d05-4be3-96ca-9f52ae24a970",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        680,
+        300
+      ],
+      "id": "443d9352-6007-4449-b6f0-8bfd2e7a4f75",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "klsa0zwHIaVp8X5T",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    content: $json.content.replace(/[^a-zA-Z0-9\\s\\-\\.:,\\/]/g, '').trim()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        320
+      ],
+      "id": "2f5322c2-f92c-44a0-8706-43ca9b07c049",
+      "name": "Code2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Upload PDF to PDF.co",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload PDF to PDF.co": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5b69a169-b94e-4d0d-9ee2-181c2a2de098",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bb3a2fefecdc8f033523ed138edb26d5c172be5eed56c76dd6a8bf40ae17f153"
+  },
+  "id": "XrcvXRrBgCWo12y1",
+  "tags": []
+}
